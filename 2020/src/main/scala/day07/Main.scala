@@ -1,57 +1,81 @@
 package day07
 
-import day04.Main.{isPassportValid, parsePassport}
+import io.Input
 
-import scala.collection.mutable.ListBuffer
-import scala.io.{BufferedSource, Source}
+import scala.collection.mutable
+import scala.util.matching.Regex
+
+case class Bag(color: String, body: List[(String, String)]) {
+
+  def contains(color: String): Boolean =
+    body.exists(_._2 == color)
+}
+
+sealed trait Tree[+A]
+case class Leaf[A](value: A) extends Tree[A]
+
+case class Branch[A](value: A, children: List[Tree[A]]) extends Tree[A]
 
 object Main {
+  val InputPattern: Regex = "(?>(?>\\s(\\d|no)\\s)|^)(.*?)\\sbags?".r
 
   def main(args: Array[String]): Unit = {
-    val source = Source.fromInputStream(getClass.getResourceAsStream("/day06.txt"))
-    val result1 = countAnyAnswers(source)
-    source.close()
-    println(f"Result: $result1")
-    val source2 = Source.fromInputStream(getClass.getResourceAsStream("/day06.txt"))
-    val result2 = countEveryAnswers(source2)
-    source2.close()
-    println(f"Result: $result2")
+    val input = Input.read("/day07.txt").map(parse)
+    val result1 = task1(input)
+    val result2 = task2(input)
+    println(result1)
+    println(result2)
   }
 
-  def countAnyAnswers(source: BufferedSource): Int = {
-    val lines = new ListBuffer[String]()
-    var answers = 0
-    for (line <- source.getLines())
-      if (line.isEmpty) {
-        answers += countAnswersForGroup(lines.toList)
-        lines.clear()
-      } else
-        lines += line
-    answers += countAnswersForGroup(lines.toList)
-    answers
+  def parse(input: String): Bag = {
+    val matches = InputPattern
+      .findAllIn(input)
+      .matchData
+      .map(m => (m.group(1), m.group(2)))
+      .toList
+    Bag(matches.head._2, matches.drop(1))
   }
 
-  def countEveryAnswers(source: BufferedSource): Int = {
-    val lines = new ListBuffer[String]()
-    var answers = 0
-    for (line <- source.getLines())
-      if (line.isEmpty) {
-        answers += countOnlyAnswersForGroup(lines.toList)
-        lines.clear()
-      } else
-        lines += line
-    answers += countOnlyAnswersForGroup(lines.toList)
-    answers
+  def task1(input: List[Bag]): Int = {
+    var countContainingBags = mutable.ListBuffer("shiny gold")
+    val containingBags = mutable.HashSet[String]()
+    while (countContainingBags.nonEmpty) {
+      val newlyFound = mutable.ListBuffer[String]()
+      countContainingBags.foreach { color =>
+        input.filter(bag => bag.contains(color)).foreach { b =>
+          newlyFound.addOne(b.color)
+          containingBags.add(b.color)
+        }
+      }
+      countContainingBags = newlyFound
+    }
+    containingBags.size
   }
 
-  def countAnswersForGroup(answers: List[String]): Int =
-    answers.flatMap(_.split("")).toSet.size
-
-  def countOnlyAnswersForGroup(answers: List[String]): Int = {
-    val r = answers.reduce(getStringChars)
-    r.length
+  def task2(input: List[Bag]): Int = {
+    val tree = growTree(input, ("1", "shiny gold"), 1)
+    calcBags(tree) - 1
   }
 
-  def getStringChars(s1: String, s2: String): String =
-    s1.toCharArray.filter(s2.contains(_)).mkString("")
+  def calcBags(
+      tree: Tree[(String, String)],
+  ): Int =
+    tree match {
+      case Leaf(value)             => 0
+      case Branch(value, children) => value._1.toInt + children.map(calcBags).sum
+    }
+
+  def growTree(
+      input: List[Bag],
+      value: (String, String),
+      prevValue: Int,
+  ): Tree[(String, String)] = {
+    if (value._1 == "no") return Leaf(value = ("0", value._2))
+    val bag = input.find(_.color == value._2).get
+    val x = value._1.toInt * prevValue
+    val tree =
+      Branch(value = (x.toString, value._2), children = bag.body.map(growTree(input, _, x)))
+    tree
+  }
+
 }

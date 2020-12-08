@@ -3,7 +3,7 @@ package day01
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
-class MainTest extends AnyFlatSpec with should.Matchers {
+class MainSpec extends AnyFlatSpec with should.Matchers {
 
   "findSummands" should "find 2 summands" in {
     val input = List[Int](1721, 979, 366, 299, 675, 1456)

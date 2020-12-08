@@ -1,33 +1,28 @@
 package day03
 
+import io.Input
+
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
-
 object Main {
+
   def main(args: Array[String]): Unit = {
-    val input = readInput()
+    val input = Input.read("/day03.txt")
 
     val t1 = System.currentTimeMillis()
     val result1 = move(input)
     val t2 = System.currentTimeMillis()
 
     println(f"Result: $result1")
-    println(f"Took: ${t2-t1}ms")
+    println(f"Took: ${t2 - t1}ms")
 
     val t3 = System.currentTimeMillis()
     val result2 = checkAll(input)
     val t4 = System.currentTimeMillis()
 
     println(f"Result: $result2")
-    println(f"Took: ${t4-t3}ms")
-  }
-
-  def readInput(): List[String] = {
-    val bufferedSource = Source.fromInputStream(getClass.getResourceAsStream("/day03.txt"))
-    val input = bufferedSource.getLines().toList
-    bufferedSource.close()
-    input
+    println(f"Took: ${t4 - t3}ms")
   }
 
   def move(values: List[String]): Int = {
@@ -35,12 +30,10 @@ object Main {
     var y = 0
     for (row <- values) {
       var x = y * 3
-      while (x >= row.length) {
+      while (x >= row.length)
         x -= row.length
-      }
-      if (row.charAt(x).equals('#')) {
+      if (row.charAt(x).equals('#'))
         trees += 1
-      }
       y += 1
     }
     trees
@@ -54,10 +47,9 @@ object Main {
     trees += moveCustom(values, 7, 1)
     trees += moveCustom(values, 1, 2)
 
-    var x: Long= 1
-    for (i <- trees) {
+    var x: Long = 1
+    for (i <- trees)
       x = x * i
-    }
     x
   }
 
@@ -67,15 +59,12 @@ object Main {
     for (y <- values.indices by deltaY) {
       val row = values(y)
       var x = i * deltaX
-      while (x >= row.length) {
+      while (x >= row.length)
         x -= row.length
-      }
-      if (row.charAt(x).equals('#')) {
+      if (row.charAt(x).equals('#'))
         trees += 1
-      }
       i += 1
     }
     trees
   }
 }
-
