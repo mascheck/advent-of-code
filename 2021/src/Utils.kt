@@ -1,13 +1,21 @@
 import java.io.File
-import java.math.BigInteger
-import java.security.MessageDigest
+
+
+data class Point(val x: Int, val y: Int)
+
+operator fun Point.plus(b: Point): Point {
+    return Point(x = x+b.x, y = y + b.y)
+}
+
+fun List<Point>.sum(): Point {
+    var sum = Point(0,0)
+    for (element in this) {
+        sum += element
+    }
+    return sum
+}
 
 /**
  * Reads lines from the given input txt file.
  */
 fun readInput(name: String) = File("src", "$name.txt").readLines()
-
-/**
- * Converts string to md5 hash.
- */
-fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray())).toString(16)
